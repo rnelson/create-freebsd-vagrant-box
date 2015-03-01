@@ -1,19 +1,23 @@
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+# FreeBSD on Vagrant
 
-# Freebsd on Vagrant
-
-<img src="https://wunki.org/images/freebsd-icon.png" align="right" />
+<img src="https://www.freebsd.org/layout/images/logo-red.png" align="right" />
 
 > Quidquid latine dictum sit, altum viditur.
 > 
 > _(Whatever is said in Latin sounds profound.)_
 
-I love [FreeBSD] but it's a lot of work to get it running correctly on
-[Vagrant]. That's a shame, because more people should experience the quality of
-FreeBSD, the convenience of [jails] and a modern filesystem like [ZFS].
+Every time I work on a new project (which happens quite often at various local
+hackathons), I set up a new [Vagrant] environment. This is problematic as the
+base boxes that I use keep becoming unavailable, so each environment is
+different than the last; all of my setup scripts have to be customized for the
+specific event I'm at. Recently, I spent a very large chunk of a 5 hour event
+just trying to get an environment up and running.
 
-Well, now you can! With this Vagrant box you get a fully tuned, latest FreeBSD
-with ZFS by copying a single file.
+Because of this, I decided to create my own [FreeBSD] box for Vagrant that I
+could reuse at all events. In my search for information on doing that, I found
+[wunki's freebsd-vagrant project], which I have forked and customized to my
+liking. It builds a FreeBSD 10.1 VM with a [ZFS] root and a few changes to the
+base install.
 
 **Table of Contents**
 
@@ -48,9 +52,6 @@ to do is:
     # Jump inside the jail
     ezjail-admin console example.com
 
-If you want your jails started at boot, make sure to add `ezjail_enable="YES"`
-to `/etc/rc.conf`.
-
 ## Create your own FreeBSD Box
 
 This is for people who want to have their own customized box, instead of the
@@ -81,7 +82,7 @@ Attach the ISO as a CD and boot it. You can login with `root` and password
 `mfsroot`. After logging in, start the base installation with:
 
     mount_cd9660 /dev/cd0 /cdrom
-    zfsinstall -d /dev/ada0 -u /cdrom/10.0-RELEASE-amd64 -s 1G
+    zfsinstall -d /dev/ada0 -u /cdrom/10.1-RELEASE-amd64 -s 1G
 
 When the installation is done, you can `poweroff` and **remove the CD from
 boot order in the settings.**
@@ -109,12 +110,12 @@ Bootstrap pkg manager by typing:
 install the latest certificates. You can do so by fetching them from my own
 repository:
 
-    fetch http://pkg.wunki.org/10_0-amd64-server-default/All/ca_root_nss-3.17.3_1.txz
-    pkg add ca_root_nss-3.15.3.1.txz
+    pkg install ca_root_nss
+    ln -s /usr/local/etc/ssl/cert.pem /etc/ssl/cert.pem
 
 In your FreeBSD box, fetch the installation script:
 
-    fetch -o /tmp/vagrant-setup.sh https://raw.github.com/wunki/vagrant-freebsd/master/bin/vagrant-setup.sh
+    fetch -o /tmp/vagrant-setup.sh https://raw.github.com/rnelson/vagrant-freebsd/master/bin/vagrant-setup.sh
 
 Run it:
 
@@ -133,27 +134,23 @@ You can now package the box by running the following on your local machine:
 
     vagrant package --base <name-of-your-virtual-machine> --output <name-of-your-box>
 
-## What's Next?
-
-You can find the TODO's in the [TODO.org] at the root of this repository.
-
 ## Credits
 
-I got lots of useful configuration from [xironix freebsd] builds. 
+This is based off of a project by [wunki]. He used the [xironix freebsd] builds
+to help build his project.
 
 ## License
 
-The above is released under the BSD license -- who would have thought!
-Meaning, do whatever you want, but I would sure appreciate if you contribute
-any improvements back to this repository.
+This project is released under the BSD license.
 
 [FreeBSD]: http://www.freebsd.org/
 [Vagrant]: http://www.vagrantup.com/
 [jails]: http://www.freebsd.org/doc/handbook/jails.html
 [ZFS]: http://en.wikipedia.org/wiki/ZFS
-[Vagrantfile]: https://github.com/wunki/vagrant-freebsd/blob/master/Vagrantfile
+[Vagrantfile]: https://github.com/rnelson/vagrant-freebsd/blob/master/Vagrantfile
 [mfsBSD]: http://mfsbsd.vx.sk/
-[9.2-RELEASE-amd64 special edition]: http://mfsbsd.vx.sk/
-[TODO.org]: https://github.com/wunki/vagrant-freebsd/blob/master/TODO.org
+[10.1-RELEASE-amd64 special edition]: http://mfsbsd.vx.sk/
 [xironix freebsd]: https://github.com/xironix/freebsd-vagrant
 [Github recently switched to new SSLv1.2 certificates]: https://github.com/blog/1734-improving-our-ssl-setup
+[wunki]: https://github.com/wunki
+[wunki's freebsd-vagrant project]: https://github.com/wunki/vagrant-freebsd
